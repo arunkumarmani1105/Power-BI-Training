@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BLINKIT GROCERY DATA</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #0f172a;
+      color: #e5e7eb;
+    }
+    header {
+      padding: 20px;
+      text-align: center;
+      background: #020617;
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+    .container {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: #020617;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease;
+    }
+    .card:hover { transform: translateY(-5px); }
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      color: #38bdf8;
+    }
+    .stat {
+      font-size: 26px;
+      font-weight: bold;
+    }
+    canvas {
+      width: 100% !important;
+      height: 260px !important;
+    }
+  </style>
+</head>
+<body>
+
+<header>BLINKIT GROCERY DATA</header>
+
+<div class="container">
+  <div class="card">
+    <h3>Total Sales</h3>
+    <div class="stat" id="totalSales">₹0</div>
+  </div>
+  <div class="card">
+    <h3>Total Items</h3>
+    <div class="stat" id="totalItems">0</div>
+  </div>
+  <div class="card">
+    <h3>Average Rating</h3>
+    <div class="stat" id="avgRating">0</div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="card">
+    <h3>Sales by Item Type</h3>
+    <canvas id="salesByType"></canvas>
+  </div>
+  <div class="card">
+    <h3>Outlet Location Distribution</h3>
+    <canvas id="locationChart"></canvas>
+  </div>
+  <div class="card">
+    <h3>Fat Content Split</h3>
+    <canvas id="fatChart"></canvas>
+  </div>
+</div>
+
+<script>
+// Sample of attached data (can be replaced with fetch for full JSON)
+const data = [
+  {type:'Fruits', sales:145.4, location:'Tier 1', fat:'Regular', rating:5},
+  {type:'Frozen', sales:165.0, location:'Tier 1', fat:'Regular', rating:5},
+  {type:'Canned', sales:126.5, location:'Tier 3', fat:'Low Fat', rating:5},
+  {type:'Soft Drinks', sales:55.1, location:'Tier 2', fat:'Low Fat', rating:5},
+  {type:'Health', sales:192.1, location:'Tier 2', fat:'Low Fat', rating:5}
+];
+
+// KPIs
+const totalSales = data.reduce((a,b)=>a+b.sales,0).toFixed(2);
+document.getElementById('totalSales').innerText = '₹' + totalSales;
+document.getElementById('totalItems').innerText = data.length;
+document.getElementById('avgRating').innerText = (data.reduce((a,b)=>a+b.rating,0)/data.length).toFixed(1);
+
+// Utility
+function groupSum(key){
+  const res = {};
+  data.forEach(d=>res[d[key]]=(res[d[key]]||0)+d.sales);
+  return res;
+}
+
+// Charts
+const typeData = groupSum('type');
+new Chart(document.getElementById('salesByType'),{
+  type:'bar',
+  data:{labels:Object.keys(typeData),datasets:[{data:Object.values(typeData)}]},
+  options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#e5e7eb'}},y:{ticks:{color:'#e5e7eb'}}}}
+});
+
+const locData = groupSum('location');
+new Chart(document.getElementById('locationChart'),{
+  type:'pie',
+  data:{labels:Object.keys(locData),datasets:[{data:Object.values(locData)}]},
+  options:{plugins:{legend:{labels:{color:'#e5e7eb'}}}}
+});
+
+const fatCount = {};
+data.forEach(d=>fatCount[d.fat]=(fatCount[d.fat]||0)+1);
+new Chart(document.getElementById('fatChart'),{
+  type:'doughnut',
+  data:{labels:Object.keys(fatCount),datasets:[{data:Object.values(fatCount)}]},
+  options:{plugins:{legend:{labels:{color:'#e5e7eb'}}}}
+});
+</script>
+
+</body>
+</html>
